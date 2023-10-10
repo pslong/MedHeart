@@ -8,17 +8,26 @@ __all__ = ["load_model_tokenizer", "generate", "inference"]
 
 
 def load_model_tokenizer(
-    path: str = None, model_size: str = "7b", device_map: str = "auto", **tokenizer_kwargs
+    path: str = None, model_size: str = "7b", model_type: str = "base",
+    device_map: str = "auto", **tokenizer_kwargs
 ):
+    assert model_size in ("7b", "13b")
+    assert model_type in ("base", "chat")
     if model_size == "7b":
-        from base_7b.tokenization_baichuan import BaichuanTokenizer  # relative import
+        if model_type == "base":
+            from base_7b.tokenization_baichuan import BaichuanTokenizer  # relative import
+        elif model_type == "chat":
+            from chat_7b.tokenization_baichuan import BaichuanTokenizer  # relative import
     elif model_size == "13b": 
-        from base_13b.tokenization_baichuan import BaichuanTokenizer  # relative import
+        if model_type == "base":
+            from base_13b.tokenization_baichuan import BaichuanTokenizer  # relative import
+        elif model_type == "chat":
+            from chat_13b.tokenization_baichuan import BaichuanTokenizer  # relative import
     else:
         raise ValueError(f"Model size {model_size} not supported. Plz use 13b/7b")
 
     if path is None:
-        path = f"/home/ubuntu/bc2/base_{model_size}"
+        path = f"/home/ubuntu/bc2/{model_type}_{model_size}"
     # config = AutoConfig.from_pretrained(path, local_files_only=True, trust_remote_code=True)
     # print(config)
 
@@ -40,12 +49,11 @@ def generate(inputs, model, tokenizer, **kwargs) -> str:
 
 
 @logger.catch(reraise=True)
-def inference(model_size: str = "7b"):
-    model, tokenizer = load_model_tokenizer(model_size=model_size)
+def inference(model_size: str = "7b", model_type: str = "base"):
+    model, tokenizer = load_model_tokenizer(model_size=model_size, model_type=model_type)
     inputs = '登鹳雀楼->王之涣\n夜雨寄北->'
     print(generate(inputs, model, tokenizer))
 
 
 if __name__ == "__main__":
-    # inference(model_size="13b")
-    inference(model_size="7b")
+    inference(model_size="7b", model_type="base")
