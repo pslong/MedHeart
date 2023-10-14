@@ -4,8 +4,8 @@ which deepspeed
 hostfile=""
 deepspeed --hostfile=$hostfile finetune.py  \
     --report_to "none" \
-    --data_path "belle_chat_ramdon_1024.json" \
-    --model_size "7b" \
+    --data_path "new_data2.json" \
+    --model_size "13b" \
     --output_dir "output" \
     --model_max_length 512 \
     --num_train_epochs 1 \
@@ -25,4 +25,4 @@ deepspeed --hostfile=$hostfile finetune.py  \
     --deepspeed ds_config.json \
     --bf16 True \
     --tf32 True \
-    --use_lora False
+    --use_lora True
