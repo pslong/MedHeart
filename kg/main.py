@@ -11,6 +11,10 @@ class CreateKG:
         self.graph = Graph("http://localhost:7474/", auth=(kg_user, kg_password),name="neo4j")
         print(self.graph)
 
+        # 运行 Cypher 查询以删除所有节点和关系
+        query = "MATCH (n) DETACH DELETE n"
+        self.graph.run(query)
+
         if not data_path or data_path == '':
             raise Exception("数据集地址为空")
         if not os.path.exists(data_path):
@@ -21,26 +25,15 @@ class CreateKG:
         print("\n写入实体：", label)
         for item in tqdm(data, ncols=80):
             try:
-                property = {}
+                property = []
                 for key, value in item.items():
-                    if isinstance(value, str):
                       value = value.replace("'", "")
-                      property[key] = value
-                      # property.append(key + ":" + "'" + value + "'")
-                    else:
-                      property[key] = json.dumps(value)
-                      # property.append(key + ":" + str(value))
+                      property.append(key + ":" + "'" + value + "'")
                 if len(property) == 0:
                     continue
 
-                print(property)
-                property_str = json.dumps(property)
-                cql = f"MERGE (n:{label} {{ properties: $properties }})"
-                self.graph.run(cql, parameters={"properties": property_str})
-                # cql = f"MERGE (n:{label} {{ {property_string} }})"
-                # print(cql)
-                # cql = "MERGE(n:" + label + "{" + ",".join(property) + "})"
-                # self.graph.run(cql)
+                cql = f"MERGE(n:" + label + "{" + ",".join(property) + "})"
+                self.graph.run(cql)
             except Exception as e:
                 print("Error:", e)
 
@@ -74,6 +67,8 @@ class CreateKG:
         # 关系
         # 疾病症状
         diseaseSymptomRelations = []
+        # 症状疾病
+        symptomDiseaseRelations = []
         # 疾病检查
         diseaseCheckRelations = []
 
@@ -84,17 +79,22 @@ class CreateKG:
             for data in dic:
                  disease = {
                     "name": data["name"],
-                    "symptom": self.getValue("symptom", data),
-                    "cure_department":self.getValue("cure_department",data)
+                    # "symptom": self.getValue("symptom", data),
+                    # "cure_department":self.getValue("cure_department",data)
                 }
                  diseases.append(disease)
                  # 症状
                  if "symptom" in data:
                      for symptom in data["symptom"]:
-                         # 疾病科室关系
+                         # 疾病症状关系
                          diseaseSymptomRelations.append({
                              "s_name": data["name"],
                              "e_name": symptom
+                         })
+                         # 症状疾病关系
+                         symptomDiseaseRelations.append({
+                             "s_name":symptom,
+                             "e_name":data["name"]
                          })
                          # 症状实体
                          property = {
@@ -129,9 +129,11 @@ class CreateKG:
 
         # 关系
         # 疾病症状
-        self.saveRelation("disease", "symptom", "疾病症状关系", diseaseSymptomRelations)
+        self.saveRelation("疾病", "疾病症状", "疾病症状关系", diseaseSymptomRelations)
+        # 症状对应疾病
+        self.saveRelation("疾病症状", "疾病", "症状疾病关系", symptomDiseaseRelations)
         # 疾病检查
-        self.saveRelation("disease", "check", "疾病检查关系", diseaseCheckRelations)
+        self.saveRelation("疾病", "疾病检查项目", "疾病检查关系", diseaseCheckRelations)
 
 
 

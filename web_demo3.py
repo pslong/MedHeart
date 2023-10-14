@@ -21,7 +21,7 @@ def clear_chat_history():
 
 def init_chat_history():
     with st.chat_message("assistant", avatar='🤖'):
-        st.markdown("您好，我是心血管疾病大模型，很高兴为您服务🥰")
+        st.markdown("您好，我是百川大模型，很高兴为您服务🥰")
 
     if "messages" in st.session_state:
         for message in st.session_state.messages:
@@ -37,7 +37,7 @@ def init_chat_history():
 @logger.catch(reraise=True)
 def main():
     model, tokenizer = init_model(model_size="13b")
-    model = AutoModelForCausalLM.from_pretrained("output", device_map="auto", torch_dtype=torch.bfloat16, trust_remote_code=True)
+    model = AutoModelForCausalLM.from_pretrained("output1", device_map="auto", torch_dtype=torch.bfloat16, trust_remote_code=True)
     messages = init_chat_history()
 
     if prompt := st.chat_input("Shift + Enter 换行, Enter 发送"):

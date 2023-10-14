@@ -111,6 +111,8 @@ def upsert():
 		build_index=True
 	)
 def searchByText(value):
+    topK=3
+    res=[]
     client = tcvectordb.VectorDBClient(url='http://43.140.253.125:10002', username='root', key='Wb44QSziG48iHMx0vyHy92OVdxM5w1OrNKapvPdu', read_consistency=ReadConsistency.EVENTUAL_CONSISTENCY, timeout=30)
     db = client.database('db_team34')
     coll = db.collection('symptom-emb')
@@ -122,8 +124,11 @@ def searchByText(value):
         output_fields=['word']
     )           
     for i, docs in enumerate(doc_lists.get("documents")):
-        for doc in docs:
-            print(doc.get("word"))
+        for doc in docs[:topK]:
+            if doc.get("score")>0.9:
+                 res.append(doc.get("word"))
+    print(doc_lists.get("documents"))
+    return res
 
 
 if __name__ == "__main__":
