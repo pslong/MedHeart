@@ -4,9 +4,9 @@ which deepspeed
 hostfile=""
 deepspeed --hostfile=$hostfile finetune.py  \
     --report_to "none" \
-    --data_path "new_data2.json" \
+    --data_path "new_data3.json" \
     --model_size "13b" \
-    --output_dir "output" \
+    --output_dir "output1" \
     --model_max_length 512 \
     --num_train_epochs 1 \
     --per_device_train_batch_size 8 \
